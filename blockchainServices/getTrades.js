@@ -1,6 +1,6 @@
 const {provider} =  require("./provider");
 const {abi} =  require("./exchangeInstance")
-const {exchangeAddresses} =  require("./Addresses")
+const {EXCHANGE_ADDRESSES} =  require("../src/config/configurations")
 const ethers = require('ethers');
 const {post} = require('./post');
 const {logger} = require('./logging')
@@ -10,11 +10,11 @@ const {BLOCKSTART, PRUNING} = require("../src/config/configurations")
 
 
 const getTradesFromEvents = async () => {
-    const contract = new ethers.Contract(exchangeAddresses[0], abi, provider);
+    const contract = new ethers.Contract(EXCHANGE_ADDRESSES[0], abi, provider);
     provider.resetEventsBlock(BLOCKSTART)
     contract.on("TradeOpen", (one, two, three, four, five, six, seven, eight, nine, ten, eleven, block) => {
         const openTrade = async () => {
-            const tradeId =  block.args._tradeId.toString()
+            const tradeId =  block.args.tradeId.toString()
             let liquidationPrice
             try {
                 liquidationPrice = await contract.getLiquidationPrice(tradeId)
@@ -26,7 +26,7 @@ const getTradesFromEvents = async () => {
             const obj =   {
                 tradeId: tradeId.toString(),
                 isClosed,
-                isLong: block.args._isLong, 
+                isLong: block.args.isLong, 
                 liquidationPrice: liquidationPrice.toString(),
                 block: block.blockNumber,
                 exchangeAddress: block.address
@@ -41,12 +41,12 @@ const getTradesFromEvents = async () => {
     })
     contract.on("TradeClose", (one, two, three, four, five, six, seven, eight, nine, ten, eleven, block) => {
         const closeTrade = async () => {
-            const tradeId =  block.args._tradeId.toString()
+            const tradeId =  block.args.tradeId.toString()
             const liquidationPrice = 0
             const obj =   {
                 tradeId: tradeId.toString(),
                 isClosed: true,
-                isLong: block.args._isLong, 
+                isLong: block.args.isLong, 
                 liquidationPrice: liquidationPrice.toString(),
                 block: block.blockNumber,
                 exchangeAddress: block.address
